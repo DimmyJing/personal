@@ -40,7 +40,7 @@ spec:
       sourceRef:
         kind: HelmRepository
         name: docker-registry-repo
-      version: 2.2.2
+      version: 2.8.1
   interval: 1m0s
   values:
     replicaCount: 1
