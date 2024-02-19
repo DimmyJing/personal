@@ -17,3 +17,38 @@ spec:
     requests:
       storage: 60Gi
   storageClassName: longhorn
+---
+apiVersion: source.toolkit.fluxcd.io/v1beta2
+kind: HelmRepository
+metadata:
+  name: docker-registry-repo
+  namespace: docker-registry
+spec:
+  interval: 1m0s
+  url: https://helm.twun.io
+---
+apiVersion: helm.toolkit.fluxcd.io/v2beta2
+kind: HelmRelease
+metadata:
+  name: docker-registry-release
+  namespace: docker-registry
+spec:
+  chart:
+    spec:
+      chart: twuni
+      reconcileStrategy: ChartVersion
+      sourceRef:
+        kind: HelmRepository
+        name: docker-registry-repo
+      version: 2.2.2
+  interval: 1m0s
+  values:
+    replicaCount: 1
+    persistence:
+      enabled: true
+      size: 60Gi
+      deleteEnabled: true
+      storageClass: longhorn
+      existingClaim: docker-registry-pv-claim
+    secrets:
+      htpasswd: admin:$2y$05$Ozhlsk1f.wVcjA83YjGL3OwBjiWcf2iBFPMqJK/p6z6/kzGDxAvt.
