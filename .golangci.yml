@@ -1,0 +1,21 @@
+linters:
+  enable-all: true
+  disable:
+    - gofumpt
+    - depguard
+    - cyclop
+linters-settings:
+  wrapcheck:
+    ignoreSigs:
+      - .Errorf(
+      - errors.New(
+      - errors.Unwrap(
+      - .Wrap(
+      - .Wrapf(
+      - .WithMessage(
+      - .WithMessagef(
+      - .WithStack(
+      - .Fail(
+      - .Failf(
+      - .FailIf(
+      - .Capture(
