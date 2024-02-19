@@ -17,6 +17,8 @@
             go
             bun
             fluxcd
+            kubectl
+            kubernetes-helm
           ];
         };
       });
