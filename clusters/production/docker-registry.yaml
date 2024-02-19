@@ -15,7 +15,7 @@ spec:
   volumeMode: Filesystem
   resources:
     requests:
-      storage: 60Gi
+      storage: 20Gi
   storageClassName: longhorn
 ---
 apiVersion: source.toolkit.fluxcd.io/v1beta2
@@ -46,7 +46,7 @@ spec:
     replicaCount: 1
     persistence:
       enabled: true
-      size: 60Gi
+      size: 20Gi
       deleteEnabled: true
       storageClass: longhorn
       existingClaim: docker-registry-pv-claim
