@@ -5,11 +5,12 @@ metadata:
   name: arc-system
 ---
 apiVersion: source.toolkit.fluxcd.io/v1beta2
-kind: OCIRepository
+kind: HelmRepository
 metadata:
   name: arc-repo
   namespace: arc-system
 spec:
+  type: oci
   interval: 1m0s
   url: oci://ghcr.io/actions/actions-runner-controller-charts/gha-runner-scale-set-controller
 ---
@@ -24,7 +25,7 @@ spec:
       chart: arc
       reconcileStrategy: ChartVersion
       sourceRef:
-        kind: OCIRepository
+        kind: HelmRepository
         name: arc-repo
       version: 0.8.2
   interval: 1m0s
