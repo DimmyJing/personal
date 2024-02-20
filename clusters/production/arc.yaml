@@ -47,5 +47,5 @@ spec:
   interval: 1m0s
   values:
     githubConfigUrl: https://github.com/DimmyJing
-    githubConfigSecret: github-pat
+    githubConfigSecret: pre-defined-secret
     minRunners: 1
