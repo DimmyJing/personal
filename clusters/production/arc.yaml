@@ -33,3 +33,23 @@ spec:
     githubConfigUrl: https://github.com/DimmyJing
     githubConfigSecret: github-pat
     minRunners: 1
+---
+apiVersion: helm.toolkit.fluxcd.io/v2beta2
+kind: HelmRelease
+metadata:
+  name: arc-runner-release
+  namespace: arc-system
+spec:
+  chart:
+    spec:
+      chart: gha-runner-scale-set
+      reconcileStrategy: ChartVersion
+      sourceRef:
+        kind: HelmRepository
+        name: arc-repo
+      version: 0.8.2
+  interval: 1m0s
+  values:
+    githubConfigUrl: https://github.com/DimmyJing
+    githubConfigSecret: github-pat
+    minRunners: 1
