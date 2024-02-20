@@ -46,6 +46,6 @@ spec:
       version: 0.8.2
   interval: 1m0s
   values:
-    githubConfigUrl: https://github.com/DimmyJing
+    githubConfigUrl: https://github.com/DimmyJing/personal
     githubConfigSecret: pre-defined-secret
     minRunners: 1
