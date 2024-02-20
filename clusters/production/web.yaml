@@ -19,3 +19,15 @@ spec:
           image: registry.jimmyding.com/web:latest
       imagePullSecrets:
         - name: registry-credential
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: web-service
+spec:
+  selector:
+    app: web
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 3000
