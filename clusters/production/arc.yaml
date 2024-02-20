@@ -1,0 +1,33 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: arc-system
+---
+apiVersion: source.toolkit.fluxcd.io/v1beta2
+kind: OCIRepository
+metadata:
+  name: arc-repo
+  namespace: arc-system
+spec:
+  interval: 1m0s
+  url: oci://ghcr.io/actions/actions-runner-controller-charts/gha-runner-scale-set-controller
+---
+apiVersion: helm.toolkit.fluxcd.io/v2beta2
+kind: HelmRelease
+metadata:
+  name: arc-release
+  namespace: arc-system
+spec:
+  chart:
+    spec:
+      chart: arc
+      reconcileStrategy: ChartVersion
+      sourceRef:
+        kind: HelmRepository
+        name: arc-repo
+      version: 0.8.2
+  interval: 1m0s
+  values:
+    githubConfigSecret: github-pat
+    minRunners: 1
