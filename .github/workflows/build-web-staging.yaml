@@ -27,7 +27,7 @@ jobs:
           branch=${GITHUB_REF##*/}
           sha=${GITHUB_SHA::8}
           ts=$(date +%F_%H.%M.%S)
-          echo "::set-output name=BUILD_ID::${branch}-${sha}-${ts}"
+          echo "BUILD_ID=${branch}-${sha}-${ts}" >> $GITHUB_OUTPUT
       - uses: oven-sh/setup-bun@v1
         with:
           bun-version: latest
