@@ -110,7 +110,7 @@ apiVersion: image.toolkit.fluxcd.io/v1beta2
 kind: ImageRepository
 metadata:
   name: web-staging
-  namespace: staging
+  namespace: flux-system
 spec:
   image: registry.jimmyding.com/web-staging
   interval: 5m
@@ -121,7 +121,7 @@ apiVersion: image.toolkit.fluxcd.io/v1beta2
 kind: ImagePolicy
 metadata:
   name: web-staging
-  namespace: staging
+  namespace: flux-system
 spec:
   imageRepositoryRef:
     name: web-staging
