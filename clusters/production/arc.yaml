@@ -24,7 +24,7 @@ spec:
       chart: arc
       reconcileStrategy: ChartVersion
       sourceRef:
-        kind: HelmRepository
+        kind: OCIRepository
         name: arc-repo
       version: 0.8.2
   interval: 1m0s
