@@ -155,7 +155,7 @@ data:
     no-autoupdate: true
     ingress:
     - hostname: staging.jimmyding.com
-      service: http://web-service-staging.default:80
+      service: http://web-service-staging.staging:80
     - service: http_status:404
 ---
 apiVersion: apps/v1
