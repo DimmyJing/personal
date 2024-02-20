@@ -30,5 +30,6 @@ spec:
       version: 0.8.2
   interval: 1m0s
   values:
+    githubConfigUrl: https://github.com/DimmyJing
     githubConfigSecret: github-pat
     minRunners: 1
