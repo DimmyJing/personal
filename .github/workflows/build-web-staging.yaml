@@ -1,13 +1,18 @@
-name: Build web and push to repository
+name: Build web for staging and push to registry
 on:
   push:
     branches:
       - main
     paths:
       - web/**
+  pull_request:
+    branches:
+      - main
+    paths:
+      - web/**
   workflow_dispatch:
 jobs:
-  build-web:
+  build-web-staging:
     runs-on: arc-runner-release
     defaults:
       run:
@@ -17,6 +22,12 @@ jobs:
       - run: |
           sudo apt update
           sudo apt install -y unzip
+      - id: prep
+        run: |
+          branch=${GITHUB_REF##*/}
+          sha=${GITHUB_SHA::8}
+          ts=$(date +%F_%H.%M.%S)
+          echo "::set-output name=BUILD_ID::${branch}-${sha}-${ts}"
       - uses: oven-sh/setup-bun@v1
         with:
           bun-version: latest
@@ -25,5 +36,5 @@ jobs:
       - run: rm -rf ./node_modules
       - run: bun install --production --frozen-lockfile
       - run: echo ${{ secrets.REGISTRY_PASSWORD }} | docker login -u admin --password-stdin registry.jimmyding.com
-      - run: docker build -t registry.jimmyding.com/web:latest . -f ../build/web.dockerfile
-      - run: docker push registry.jimmyding.com/web:latest
+      - run: docker build -t registry.jimmyding.com/web:${{ steps.prep.outputs.BUILD_ID }} . -f ../build/web.dockerfile
+      - run: docker push registry.jimmyding.com/web:${{ steps.prep.outputs.BUILD_ID }}
