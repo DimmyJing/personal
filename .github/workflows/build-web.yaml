@@ -1,0 +1,26 @@
+name: Build web and push to repository
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - web/**
+  workflow_dispatch:
+jobs:
+  build-web:
+    runs-on: arc-runner-release
+    defaults:
+      run:
+        working-directory: ./web
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: latest
+      - run: bun install --frozen-lockfile
+      - run: bun run build
+      - run: rm -rf ./node_modules
+      - run: bun install --production --frozen-lockfile
+      - run: docker login -u admin -p ${{ secrets.REGISTRY_PASSWORD }} registry.jimmyding.com
+      - run: docker build -t registry.jimmyding.com/web:latest . -f ../build/web.dockerfile
+      - run: docker push registry.jimmyding.com/web:latest
