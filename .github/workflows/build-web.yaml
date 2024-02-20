@@ -24,6 +24,6 @@ jobs:
       - run: bun run build
       - run: rm -rf ./node_modules
       - run: bun install --production --frozen-lockfile
-      - run: docker login -u admin -p ${{ secrets.REGISTRY_PASSWORD }} registry.jimmyding.com
+      - run: echo ${{ secrets.REGISTRY_PASSWORD }} | docker login -u admin --password-stdin registry.jimmyding.com
       - run: docker build -t registry.jimmyding.com/web:latest . -f ../build/web.dockerfile
       - run: docker push registry.jimmyding.com/web:latest
