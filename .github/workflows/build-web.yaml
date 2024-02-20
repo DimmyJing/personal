@@ -14,7 +14,9 @@ jobs:
         working-directory: ./web
     steps:
       - uses: actions/checkout@v4
-      - run: sudo apt install -y unzip
+      - run: |
+          sudo apt update
+          sudo apt install -y unzip
       - uses: oven-sh/setup-bun@v1
         with:
           bun-version: latest
