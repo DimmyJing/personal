@@ -264,7 +264,7 @@ metadata:
 spec:
   type: dockerhub
   secretRef:
-    name: webhook-token
+    name: docker-registry-webhook-token
   resources:
     - kind: ImageRepository
       name: web
