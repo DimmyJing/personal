@@ -39,6 +39,48 @@ spec:
       protocol: TCP
       targetPort: 9292
 ---
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: GitRepository
+metadata:
+  name: personal-repository
+  namespace: flux-system
+spec:
+  interval: 60m
+  url: https://github.com/DimmyJing/personal
+  ref:
+    branch: main
+---
+apiVersion: notification.toolkit.fluxcd.io/v1
+kind: Receiver
+metadata:
+  name: github-receiver
+  namespace: flux-system
+spec:
+  type: github
+  events:
+    - ping
+    - push
+  secretRef:
+    name: webhook-token
+  resources:
+    - kind: GitRepository
+      name: personal-repository
+---
+apiVersion: notification.toolkit.fluxcd.io/v1
+kind: Receiver
+metadata:
+  name: docker-registry-receiver
+  namespace: flux-system
+spec:
+  type: dockerhub
+  secretRef:
+    name: webhook-token
+  resources:
+    - kind: ImageRepository
+      name: web
+    - kind: ImageRepository
+      name: web-staging
+---
 apiVersion: v1
 kind: ConfigMap
 metadata:
