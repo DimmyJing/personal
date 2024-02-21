@@ -255,3 +255,18 @@ spec:
             items:
               - key: config.yaml
                 path: config.yaml
+---
+apiVersion: notification.toolkit.fluxcd.io/v1
+kind: Receiver
+metadata:
+  name: docker-registry-receiver
+  namespace: flux-system
+spec:
+  type: dockerhub
+  secretRef:
+    name: webhook-token
+  resources:
+    - kind: ImageRepository
+      name: web
+    - kind: ImageRepository
+      name: web-staging
