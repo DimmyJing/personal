@@ -52,6 +52,14 @@ spec:
       existingClaim: docker-registry-pv-claim
     secrets:
       htpasswd: admin:$2y$05$Ozhlsk1f.wVcjA83YjGL3OwBjiWcf2iBFPMqJK/p6z6/kzGDxAvt.
+    configData:
+      notifications:
+        endpoints:
+          - name: flux-webhook
+            url: https://flux-webhook.jimmyding.com/hook/3f56c1d033c477d153a426c4f99901a8d60b8526b22c69067e6c2272416ffb65
+            timeout: 500ms
+            threshold: 5
+            backoff: 1s
 ---
 apiVersion: v1
 kind: ConfigMap
