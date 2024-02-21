@@ -39,17 +39,6 @@ spec:
       protocol: TCP
       targetPort: 9292
 ---
-apiVersion: source.toolkit.fluxcd.io/v1
-kind: GitRepository
-metadata:
-  name: personal-repository
-  namespace: flux-system
-spec:
-  interval: 60m
-  url: https://github.com/DimmyJing/personal
-  ref:
-    branch: main
----
 apiVersion: notification.toolkit.fluxcd.io/v1
 kind: Receiver
 metadata:
@@ -64,7 +53,7 @@ spec:
     name: webhook-token
   resources:
     - kind: GitRepository
-      name: personal-repository
+      name: flux-system
 ---
 apiVersion: notification.toolkit.fluxcd.io/v1
 kind: Receiver
