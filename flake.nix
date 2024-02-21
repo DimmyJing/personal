@@ -18,7 +18,6 @@
             bun
             fluxcd
             kubectl
-            kubernetes-helm
           ];
         };
       });
