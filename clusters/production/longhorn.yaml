@@ -28,5 +28,6 @@ spec:
         name: longhorn-repo
       version: 1.6.0
   interval: 1m0s
-  persistence:
-    defaultClassReplicaCount: 1
+  values:
+    persistence:
+      defaultClassReplicaCount: 1
