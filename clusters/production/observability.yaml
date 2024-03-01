@@ -460,7 +460,7 @@ spec:
             }
             targets = discovery.relabel.metrics_cadvisor.output
             scrape_interval = "60s"
-            forward_to = [prometheus.remote_write.default.receiver]
+            forward_to = []
           }
 
           discovery.relabel "metrics_kubelet" {
@@ -492,7 +492,7 @@ spec:
             }
             targets = discovery.relabel.metrics_kubelet.output
             scrape_interval = "60s"
-            forward_to = [prometheus.remote_write.default.receiver]
+            forward_to = []
           }
 
           prometheus.scrape "kube_metrics_scraper" {
@@ -538,7 +538,7 @@ spec:
               enabled = true
             }
             targets = discovery.relabel.logs.output
-            forward_to = [loki.write.default.receiver]
+            forward_to = []
           }
 
           loki.write "default" {
