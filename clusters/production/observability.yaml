@@ -1,0 +1,589 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: observability
+---
+apiVersion: source.toolkit.fluxcd.io/v1beta2
+kind: HelmRepository
+metadata:
+  name: grafana-repo
+  namespace: observability
+spec:
+  interval: 1m0s
+  url: https://grafana.github.io/helm-charts
+---
+apiVersion: source.toolkit.fluxcd.io/v1beta2
+kind: HelmRepository
+metadata:
+  name: prometheus-repo
+  namespace: observability
+spec:
+  interval: 1m0s
+  url: https://prometheus-community.github.io/helm-charts
+---
+apiVersion: helm.toolkit.fluxcd.io/v2beta2
+kind: HelmRelease
+metadata:
+  name: kube-state-metrics-release
+  namespace: observability
+spec:
+  chart:
+    spec:
+      chart: kube-state-metrics
+      reconcileStrategy: ChartVersion
+      sourceRef:
+        kind: HelmRepository
+        name: prometheus-repo
+      version: 5.16.1
+  interval: 1m0s
+---
+apiVersion: helm.toolkit.fluxcd.io/v2beta2
+kind: HelmRelease
+metadata:
+  name: grafana-release
+  namespace: observability
+spec:
+  chart:
+    spec:
+      chart: grafana
+      reconcileStrategy: ChartVersion
+      sourceRef:
+        kind: HelmRepository
+        name: grafana-repo
+      version: 7.3.2
+  interval: 1m0s
+  values:
+    datasources:
+      datasources.yaml:
+        apiVersion: 1
+        datasources:
+          - name: Mimir
+            type: prometheus
+            isDefault: true
+            uid: prom
+            url: http://mimir-release-nginx/prometheus
+          - name: Loki
+            type: loki
+            isDefault: false
+            uid: loki
+            url: http://loki-release-loki-distributed-gateway
+          - name: Tempo
+            type: tempo
+            isDefault: false
+            uid: tempo
+            url: http://tempo-release-query-frontend:3100
+            jsonData:
+              tracesToLogsV2:
+                datasourceUid: loki
+              lokiSearch:
+                datasourceUid: loki
+              tracesToMetrics:
+                datasourceUid: prom
+              serviceMap:
+                datasourceUid: prom
+    admin:
+      existingSecret: grafana-secret
+      userKey: admin-user
+      passwordKey: admin-password
+---
+apiVersion: helm.toolkit.fluxcd.io/v2beta2
+kind: HelmRelease
+metadata:
+  name: mimir-release
+  namespace: observability
+spec:
+  chart:
+    spec:
+      chart: mimir-distributed
+      reconcileStrategy: ChartVersion
+      sourceRef:
+        kind: HelmRepository
+        name: grafana-repo
+      version: 5.2.1
+  interval: 1m0s
+  values:
+    global:
+      extraEnvFrom:
+        - secretRef:
+            name: minio-secret
+    mimir:
+      structuredConfig:
+        common:
+          storage:
+            backend: s3
+            s3:
+              endpoint: minio.jimmyding.com
+              access_key_id: minio
+              secret_access_key: ${MINIO_SECRET}
+        alertmanager_storage:
+          s3:
+            bucket_name: mimir-alertmanager
+        blocks_storage:
+          s3:
+            bucket_name: mimir-blocks
+        ruler_storage:
+          s3:
+            bucket_name: mimir-ruler
+        limits:
+          max_global_series_per_user: 1000000
+    minio:
+      enabled: false
+---
+apiVersion: helm.toolkit.fluxcd.io/v2beta2
+kind: HelmRelease
+metadata:
+  name: loki-release
+  namespace: observability
+spec:
+  chart:
+    spec:
+      chart: loki-distributed
+      reconcileStrategy: ChartVersion
+      sourceRef:
+        kind: HelmRepository
+        name: grafana-repo
+      version: 0.78.2
+  interval: 1m0s
+  values:
+    loki:
+      structuredConfig:
+        ingester:
+          # Disable chunk transfer which is not possible with statefulsets and unnecessary for boltdb-shipper
+          max_transfer_retries: 0
+          chunk_idle_period: 1h
+          chunk_target_size: 1536000
+          max_chunk_age: 1h
+      schemaConfig:
+        configs:
+          - from: "2020-09-07"
+            store: boltdb-shipper
+            object_store: s3
+            schema: v11
+            index:
+              prefix: loki_index_
+              period: 24h
+      storageConfig:
+        boltdb_shipper:
+          shared_store: s3
+          active_index_directory: /var/loki/index
+          cache_location: /var/loki/cache
+          cache_ttl: 168h
+        filesystem: null
+        aws:
+          s3: http://minio:${MINIO_SECRET}@minio.jimmyding.com/loki
+          s3forcepathstyle: true
+    ingester:
+      extraArgs:
+        - -config.expand-env=true
+      extraEnvFrom:
+        - secretRef:
+            name: minio-secret
+    distributor:
+      extraArgs:
+        - -config.expand-env=true
+      extraEnvFrom:
+        - secretRef:
+            name: minio-secret
+    querier:
+      extraArgs:
+        - -config.expand-env=true
+      extraEnvFrom:
+        - secretRef:
+            name: minio-secret
+    queryFrontend:
+      extraArgs:
+        - -config.expand-env=true
+      extraEnvFrom:
+        - secretRef:
+            name: minio-secret
+    queryScheduler:
+      extraArgs:
+        - -config.expand-env=true
+      extraEnvFrom:
+        - secretRef:
+            name: minio-secret
+    tableManager:
+      extraArgs:
+        - -config.expand-env=true
+      extraEnvFrom:
+        - secretRef:
+            name: minio-secret
+    gateway:
+      extraArgs:
+        - -config.expand-env=true
+      extraEnvFrom:
+        - secretRef:
+            name: minio-secret
+    compactor:
+      extraArgs:
+        - -config.expand-env=true
+      extraEnvFrom:
+        - secretRef:
+            name: minio-secret
+    ruler:
+      extraArgs:
+        - -config.expand-env=true
+      extraEnvFrom:
+        - secretRef:
+            name: minio-secret
+    indexGateway:
+      extraArgs:
+        - -config.expand-env=true
+      extraEnvFrom:
+        - secretRef:
+            name: minio-secret
+    memcachedChunks:
+      extraArgs:
+        - -config.expand-env=true
+        - -I 32m
+      extraEnvFrom:
+        - secretRef:
+            name: minio-secret
+    memcachedFrontend:
+      extraArgs:
+        - -config.expand-env=true
+        - -I 32m
+      extraEnvFrom:
+        - secretRef:
+            name: minio-secret
+    memcachedIndexQueries:
+      extraArgs:
+        - -config.expand-env=true
+        - -I 32m
+      extraEnvFrom:
+        - secretRef:
+            name: minio-secret
+    memcachedIndexWrites:
+      extraArgs:
+        - -config.expand-env=true
+        - -I 32m
+      extraEnvFrom:
+        - secretRef:
+            name: minio-secret
+---
+apiVersion: helm.toolkit.fluxcd.io/v2beta2
+kind: HelmRelease
+metadata:
+  name: tempo-release
+  namespace: observability
+spec:
+  chart:
+    spec:
+      chart: tempo-distributed
+      reconcileStrategy: ChartVersion
+      sourceRef:
+        kind: HelmRepository
+        name: grafana-repo
+      version: 1.8.4
+  interval: 1m0s
+  values:
+    traces:
+      otlp:
+        http:
+          enabled: true
+        grpc:
+          enabled: true
+    storage:
+      trace:
+        backend: s3
+        s3:
+          access_key: minio
+          secret_key: ${MINIO_SECRET}
+          bucket: tempo-traces
+          endpoint: minio.jimmyding.com
+    compactor:
+      extraArgs:
+        - -config.expand-env=true
+      extraEnvFrom:
+        - secretRef:
+            name: minio-secret
+    distributor:
+      extraArgs:
+        - -config.expand-env=true
+      extraEnvFrom:
+        - secretRef:
+            name: minio-secret
+    ingester:
+      extraArgs:
+        - -config.expand-env=true
+      extraEnvFrom:
+        - secretRef:
+            name: minio-secret
+    metricsGenerator:
+      enabled: true
+      config:
+        storage:
+          remote_write:
+            - url: http://mimir-release-nginx/api/v1/push
+              send_exemplars: true
+      extraArgs:
+        - -config.expand-env=true
+      extraEnvFrom:
+        - secretRef:
+            name: minio-secret
+    querier:
+      extraArgs:
+        - -config.expand-env=true
+      extraEnvFrom:
+        - secretRef:
+            name: minio-secret
+    queryFrontend:
+      extraArgs:
+        - -config.expand-env=true
+      extraEnvFrom:
+        - secretRef:
+            name: minio-secret
+---
+apiVersion: helm.toolkit.fluxcd.io/v2beta2
+kind: HelmRelease
+metadata:
+  name: grafana-agent-release
+  namespace: observability
+spec:
+  chart:
+    spec:
+      chart: grafana-agent
+      reconcileStrategy: ChartVersion
+      sourceRef:
+        kind: HelmRepository
+        name: grafana-repo
+      version: 0.33.0
+  interval: 1m0s
+  values:
+    agent:
+      clustering:
+        enabled: true
+      configMap:
+        content: |
+          logging {
+            level  = "info"
+            format = "logfmt"
+          }
+
+          discovery.kubernetes "pods" {
+            role = "pod"
+          }
+
+          discovery.kubernetes "nodes" {
+            role = "node"
+          }
+
+          discovery.kubernetes "services" {
+            role = "service"
+          }
+
+          discovery.kubernetes "endpoints" {
+            role = "endpoints"
+          }
+
+          discovery.kubernetes "endpointslices" {
+            role = "endpointslice"
+          }
+
+          discovery.kubernetes "ingresses" {
+            role = "ingress"
+          }
+
+          otelcol.receiver.otlp "default" {
+            grpc {}
+            http {}
+            output {
+              metrics = [otelcol.processor.batch.default.input]
+              logs = [otelcol.processor.batch.default.input]
+              traces = [otelcol.processor.batch.default.input]
+            }
+          }
+
+          otelcol.processor.batch "default" {
+            output {
+              metrics = [otelcol.exporter.prometheus.default.input, otelcol.exporter.otlp.signoz.input]
+              logs = [otelcol.exporter.loki.default.input, otelcol.exporter.otlp.signoz.input]
+              traces = [otelcol.exporter.otlp.default.input, otelcol.exporter.otlp.signoz.input]
+            }
+          }
+
+          otelcol.exporter.prometheus "default" {
+            forward_to = [prometheus.remote_write.default.receiver]
+          }
+
+          otelcol.exporter.loki "default" {
+            forward_to = [loki.write.default.receiver]
+          }
+
+          otelcol.exporter.otlp "default" {
+            client {
+              endpoint = "tempo-release-distributor:4317"
+              tls {
+                insecure = true
+                insecure_skip_verify = true
+              }
+            }
+          }
+
+          otelcol.exporter.otlp "signoz" {
+            client {
+              endpoint = "signoz-release-otel-collector.signoz:4317"
+              tls {
+                insecure = true
+                insecure_skip_verify = true
+              }
+            }
+          }
+
+          discovery.relabel "metrics_cadvisor" {
+            targets = discovery.kubernetes.nodes.targets
+            rule {
+              action = "replace"
+              target_label = "__address__"
+              replacement = "kubernetes.default:443"
+            }
+            rule {
+              source_labels = ["__meta_kubernetes_node_name"]
+              regex = "(.+)"
+              action = "replace"
+              replacement = "/api/v1/nodes/${1}/proxy/metrics/cadvisor"
+              target_label = "__metrics_path__"
+            }
+          }
+
+          prometheus.scrape "cadvisor" {
+            scheme = "https"
+            tls_config {
+              server_name = "kubernetes"
+              ca_file = "/var/run/secrets/kubernetes.io/serviceaccount/ca.crt"
+              insecure_skip_verify = false
+            }
+            bearer_token_file = "/var/run/secrets/kubernetes.io/serviceaccount/token"
+            clustering {
+              enabled = true
+            }
+            targets = discovery.relabel.metrics_cadvisor.output
+            scrape_interval = "60s"
+            forward_to = [prometheus.remote_write.default.receiver]
+          }
+
+          discovery.relabel "metrics_kubelet" {
+            targets = discovery.kubernetes.nodes.targets
+            rule {
+              action = "replace"
+              target_label = "__address__"
+              replacement = "kubernetes.default:443"
+            }
+            rule {
+              source_labels = ["__meta_kubernetes_node_name"]
+              regex = "(.+)"
+              action = "replace"
+              replacement = "/api/v1/nodes/${1}/proxy/metrics"
+              target_label = "__metrics_path__"
+            }
+          }
+
+          prometheus.scrape "kubelet" {
+            scheme = "https"
+            tls_config {
+              server_name = "kubernetes"
+              ca_file = "/var/run/secrets/kubernetes.io/serviceaccount/ca.crt"
+              insecure_skip_verify = false
+            }
+            bearer_token_file = "/var/run/secrets/kubernetes.io/serviceaccount/token"
+            clustering {
+              enabled = true
+            }
+            targets = discovery.relabel.metrics_kubelet.output
+            scrape_interval = "60s"
+            forward_to = [prometheus.remote_write.default.receiver]
+          }
+
+          prometheus.scrape "kube_metrics_scraper" {
+            clustering {
+              enabled = true
+            }
+            targets = [{"__address__" = "kube-state-metrics-release:8080"}]
+            forward_to = [prometheus.remote_write.default.receiver]
+          }
+
+          prometheus.remote_write "default" {
+            endpoint {
+              url = "http://mimir-release-nginx/api/v1/push"
+            }
+          }
+
+          discovery.relabel "logs" {
+            targets = discovery.kubernetes.pods.targets
+            rule {
+              source_labels = ["__meta_kubernetes_namespace"]
+              target_label = "namespace"
+            }
+            rule {
+              source_labels = ["__meta_kubernetes_pod_name"]
+              target_label = "pod"
+            }
+            rule {
+              source_labels = ["__meta_kubernetes_pod_container_name"]
+              target_label = "container"
+            }
+            rule {
+              source_labels = ["__meta_kubernetes_pod_label_app"]
+              target_label = "app"
+            }
+            rule {
+              source_labels = ["__meta_kubernetes_pod_label_app_kubernetes_io_name"]
+              target_label = "name"
+            }
+          }
+
+          loki.source.kubernetes "pods" {
+            clustering {
+              enabled = true
+            }
+            targets = discovery.relabel.logs.output
+            forward_to = [loki.write.default.receiver]
+          }
+
+          loki.write "default" {
+            endpoint {
+              url = "http://loki-release-loki-distributed-gateway/loki/api/v1/push"
+            }
+          }
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: grafana-agent-otlp
+  namespace: observability
+spec:
+  selector:
+    app.kubernetes.io/name: grafana-agent
+  ports:
+    - name: otlp-grpc
+      protocol: TCP
+      port: 4317
+      targetPort: 4317
+    - name: otlp-http
+      protocol: TCP
+      port: 4318
+      targetPort: 4318
+---
+apiVersion: notification.toolkit.fluxcd.io/v1beta3
+kind: Provider
+metadata:
+  name: github-status
+  namespace: flux-system
+spec:
+  type: github
+  address: https://github.com/DimmyJing/personal.git
+  secretRef:
+    name: github-token
+---
+apiVersion: notification.toolkit.fluxcd.io/v1beta3
+kind: Alert
+metadata:
+  name: github-status
+  namespace: flux-system
+spec:
+  providerRef:
+    name: github-status
+  eventSources:
+    - kind: Kustomization
+      name: flux-system
