@@ -1,0 +1,89 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: cloudflare
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: cloudflared
+  namespace: cloudflare
+data:
+  config.yaml: |
+    tunnel: jimmyding
+    credentials-file: /etc/cloudflared/creds/credentials.json
+    metrics: 0.0.0.0:2000
+    no-autoupdate: true
+    ingress:
+    - hostname: jimmyding.com
+      service: http://web-service.default:80
+    - hostname: staging.jimmyding.com
+      service: http://web-service-staging.staging:80
+    - hostname: otlp.jimmyding.com
+      service: http://grafana-agent-otlp.observability:4317
+    - hostname: otlp-http.jimmyding.com
+      service: http://grafana-agent-otlp.observability:4318
+    - hostname: grafana.jimmyding.com
+      service: http://grafana-release.observability:80
+    - hostname: longhorn.jimmyding.com
+      service: http://longhorn-frontend.longhorn-system:80
+    - hostname: registry.jimmyding.com
+      service: http://docker-registry-release.docker-registry:5000
+    - hostname: flux-webhook.jimmyding.com
+      service: http://notification-receiver.flux-system:80
+    - hostname: minio-console.jimmyding.com
+      service: http://minio-release.minio-system:9001
+    - hostname: minio.jimmyding.com
+      service: http://minio-release.minio-system:9000
+    - service: http_status:404
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cloudflared
+  namespace: cloudflare
+  annotations:
+    reloader.stakater.com/auto: "true"
+spec:
+  selector:
+    matchLabels:
+      app: cloudflared
+  replicas: 2
+  template:
+    metadata:
+      labels:
+        app: cloudflared
+    spec:
+      containers:
+        - name: cloudflared
+          image: cloudflare/cloudflared:2024.2.1
+          args:
+            - tunnel
+            - --config
+            - /etc/cloudflared/config/config.yaml
+            - run
+          livenessProbe:
+            httpGet:
+              path: /ready
+              port: 2000
+            failureThreshold: 1
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          volumeMounts:
+            - name: config
+              mountPath: /etc/cloudflared/config
+              readOnly: true
+            - name: creds
+              mountPath: /etc/cloudflared/creds
+              readOnly: true
+      volumes:
+        - name: creds
+          secret:
+            secretName: tunnel-credentials
+        - name: config
+          configMap:
+            name: cloudflared
+            items:
+              - key: config.yaml
+                path: config.yaml
