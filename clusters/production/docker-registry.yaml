@@ -60,3 +60,8 @@ spec:
             timeout: 500ms
             threshold: 5
             backoff: 1s
+    garbageCollect:
+      enabled: true
+    extraEnvVars:
+      - name: REGISTRY_STORAGE_DELETE_ENABLED
+        value: "true"
