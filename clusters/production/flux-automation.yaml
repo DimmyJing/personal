@@ -30,7 +30,6 @@ metadata:
   name: notification-receiver
   namespace: flux-system
 spec:
-  type: LoadBalancer
   selector:
     app: notification-controller
   ports:
