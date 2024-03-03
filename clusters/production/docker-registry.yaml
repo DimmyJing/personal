@@ -11,7 +11,7 @@ metadata:
   namespace: docker-registry
 spec:
   accessModes:
-    - ReadWriteMany
+    - ReadWriteOnce
   volumeMode: Filesystem
   resources:
     requests:
