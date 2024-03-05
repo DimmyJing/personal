@@ -35,7 +35,7 @@ spec:
       sourceRef:
         kind: HelmRepository
         name: prometheus-repo
-      version: 5.16.1
+      version: 5.16.3
   interval: 1m0s
 ---
 apiVersion: helm.toolkit.fluxcd.io/v2beta2
@@ -51,7 +51,7 @@ spec:
       sourceRef:
         kind: HelmRepository
         name: grafana-repo
-      version: 7.3.2
+      version: 7.3.3
   interval: 1m0s
   values:
     datasources:
@@ -143,7 +143,7 @@ spec:
       sourceRef:
         kind: HelmRepository
         name: grafana-repo
-      version: 0.78.2
+      version: 0.78.3
   interval: 1m0s
   values:
     loki:
@@ -275,7 +275,7 @@ spec:
       sourceRef:
         kind: HelmRepository
         name: grafana-repo
-      version: 1.8.4
+      version: 1.8.5
   interval: 1m0s
   values:
     traces:
@@ -348,7 +348,7 @@ spec:
       sourceRef:
         kind: HelmRepository
         name: grafana-repo
-      version: 0.33.0
+      version: 0.35.0
   interval: 1m0s
   values:
     agent:
