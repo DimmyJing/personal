@@ -34,7 +34,9 @@ jobs:
           elixir-version: "1.16.1"
           install-hex: true
           install-rebar: false
-      - run: mix deps.get --only prod
+      - run: mix deps.get --only prod --no-deps-check
+        env:
+          ELIXIR_ERL_OPTIONS: +fnu
       - run: MIX_ENV=prod mix compile
       - run: MIX_ENV=prod mix assets.deploy
       - run: mix phx.gen.release
