@@ -106,7 +106,7 @@ spec:
     spec:
       containers:
         - name: web
-          image: registry.jimmyding.com/web-staging:main-299e8926-2024-03-06_17.39.56 # {"$imagepolicy": "flux-system:web-staging"}
+          image: registry.jimmyding.com/web-staging:main-7d06ca18-2024-03-06_17.49.39 # {"$imagepolicy": "flux-system:web-staging"}
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 3000
