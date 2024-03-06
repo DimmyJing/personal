@@ -37,10 +37,18 @@ jobs:
       - run: mix deps.get --only prod
         env:
           ELIXIR_ERL_OPTIONS: +fnu
-      - run: MIX_ENV=prod mix compile
-      - run: MIX_ENV=prod mix assets.deploy
-      - run: mix phx.gen.release
-      - run: MIX_ENV=prod mix release
+      - run: mix compile
+        env:
+          ELIXIR_ERL_OPTIONS: +fnu
+          MIX_ENV: prod
+      - run: mix assets.deploy
+        env:
+          ELIXIR_ERL_OPTIONS: +fnu
+          MIX_ENV: prod
+      - run: mix release
+        env:
+          ELIXIR_ERL_OPTIONS: +fnu
+          MIX_ENV: prod
       - run: echo ${{ secrets.REGISTRY_PASSWORD }} | docker login -u admin --password-stdin registry.jimmyding.com
       - run: docker build -t registry.jimmyding.com/web-staging:${{ steps.prep.outputs.BUILD_ID }} . -f ../build/web.dockerfile
       - run: docker push registry.jimmyding.com/web-staging:${{ steps.prep.outputs.BUILD_ID }}
