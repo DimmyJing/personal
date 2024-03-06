@@ -87,10 +87,7 @@ spec:
             - name: PHX_HOST
               value: jimmyding.com
             - name: RELEASE_COOKIE
-              valueFrom:
-                secretKeyRef:
-                  name: libcluster-cookie
-                  key: RELEASE_COOKIE
+              value: monster
             - name: NAMESPACE
               valueFrom:
                 fieldRef:
@@ -201,10 +198,7 @@ spec:
             - name: PHX_HOST
               value: staging.jimmyding.com
             - name: RELEASE_COOKIE
-              valueFrom:
-                secretKeyRef:
-                  name: libcluster-cookie
-                  key: RELEASE_COOKIE
+              value: monster
             - name: NAMESPACE
               valueFrom:
                 fieldRef:
