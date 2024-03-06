@@ -175,7 +175,7 @@ spec:
       serviceAccountName: app-serviceaccount
       containers:
         - name: app
-          image: registry.jimmyding.com/app-staging:main-4fa6440a-2024-03-06_20.45.42 # {"$imagepolicy": "flux-system:app-staging"}
+          image: registry.jimmyding.com/app-staging:main-c3d48cde-2024-03-06_21.12.26 # {"$imagepolicy": "flux-system:app-staging"}
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 4000
