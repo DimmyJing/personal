@@ -116,6 +116,8 @@ spec:
                 secretKeyRef:
                   name: phoenix-secret-key
                   key: SECRET_KEY_BASE
+            - name: PHX_HOST
+              value: staging.jimmyding.com
       imagePullSecrets:
         - name: registry-credential
 ---
