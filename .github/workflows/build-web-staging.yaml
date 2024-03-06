@@ -21,7 +21,7 @@ jobs:
       - uses: actions/checkout@v4
       - run: |
           sudo apt update
-          sudo apt install -y unzip
+          sudo apt install -y unzip git
       - id: prep
         run: |
           branch=${GITHUB_REF##*/}
@@ -34,7 +34,7 @@ jobs:
           elixir-version: "1.16.1"
           install-hex: true
           install-rebar: false
-      - run: mix deps.get --only prod --no-deps-check
+      - run: mix deps.get --only prod
         env:
           ELIXIR_ERL_OPTIONS: +fnu
       - run: MIX_ENV=prod mix compile
