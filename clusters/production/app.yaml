@@ -163,7 +163,7 @@ metadata:
   name: app-deployment-staging
   namespace: staging
 spec:
-  replicas: 1
+  replicas: 3
   selector:
     matchLabels:
       app: app
