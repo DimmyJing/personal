@@ -12,23 +12,13 @@ jobs:
     runs-on: arc-runner-release
     defaults:
       run:
-        working-directory: ./web
+        working-directory: ./app
     steps:
       - uses: actions/checkout@v4
-      - run: |
-          sudo apt update
-          sudo apt install -y unzip
       - id: prep
         run: |
           TAG=${{ github.event.release.tag_name || github.event.inputs.version }}
           echo "BUILD_ID=${TAG#v}" >> $GITHUB_OUTPUT
-      - uses: oven-sh/setup-bun@v1
-        with:
-          bun-version: latest
-      - run: bun install --frozen-lockfile
-      - run: bun run build
-      - run: rm -rf ./node_modules
-      - run: bun install --production --frozen-lockfile
       - run: echo ${{ secrets.REGISTRY_PASSWORD }} | docker login -u admin --password-stdin registry.jimmyding.com
-      - run: docker build -t registry.jimmyding.com/web:${{ steps.prep.outputs.BUILD_ID }} . -f ../build/web.dockerfile
-      - run: docker push registry.jimmyding.com/web:${{ steps.prep.outputs.BUILD_ID }}
+      - run: docker build -t registry.jimmyding.com/web-staging:${{ steps.prep.outputs.BUILD_ID }} .
+      - run: docker push registry.jimmyding.com/web-staging:${{ steps.prep.outputs.BUILD_ID }}

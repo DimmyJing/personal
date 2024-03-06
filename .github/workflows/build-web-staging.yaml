@@ -19,9 +19,6 @@ jobs:
         working-directory: ./app
     steps:
       - uses: actions/checkout@v4
-      - run: |
-          sudo apt update
-          sudo apt install -y unzip git
       - id: prep
         run: |
           branch=${GITHUB_REF##*/}
