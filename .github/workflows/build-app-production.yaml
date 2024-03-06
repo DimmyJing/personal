@@ -1,4 +1,4 @@
-name: Build web for production and push to registry
+name: Build app for production and push to registry
 on:
   release:
     types: [published]
@@ -8,7 +8,7 @@ on:
         required: true
         description: Version of the release in the format of v1.0.0
 jobs:
-  build-web-production:
+  build-app-production:
     runs-on: arc-runner-release
     defaults:
       run:
@@ -20,5 +20,5 @@ jobs:
           TAG=${{ github.event.release.tag_name || github.event.inputs.version }}
           echo "BUILD_ID=${TAG#v}" >> $GITHUB_OUTPUT
       - run: echo ${{ secrets.REGISTRY_PASSWORD }} | docker login -u admin --password-stdin registry.jimmyding.com
-      - run: docker build -t registry.jimmyding.com/web:${{ steps.prep.outputs.BUILD_ID }} .
-      - run: docker push registry.jimmyding.com/web:${{ steps.prep.outputs.BUILD_ID }}
+      - run: docker build -t registry.jimmyding.com/app:${{ steps.prep.outputs.BUILD_ID }} .
+      - run: docker push registry.jimmyding.com/app:${{ steps.prep.outputs.BUILD_ID }}

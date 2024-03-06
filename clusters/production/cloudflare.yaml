@@ -17,9 +17,9 @@ data:
     no-autoupdate: true
     ingress:
     - hostname: jimmyding.com
-      service: http://web-service.default:80
+      service: http://app-service.default:80
     - hostname: staging.jimmyding.com
-      service: http://web-service-staging.staging:80
+      service: http://app-service-staging.staging:80
     - hostname: otlp.jimmyding.com
       service: http://grafana-agent-otlp.observability:4317
     - hostname: otlp-http.jimmyding.com

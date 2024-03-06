@@ -1,4 +1,4 @@
-name: Build web for staging and push to registry
+name: Build app for staging and push to registry
 on:
   push:
     branches:
@@ -12,7 +12,7 @@ on:
       - app/**
   workflow_dispatch:
 jobs:
-  build-web-staging:
+  build-app-staging:
     runs-on: arc-runner-release
     defaults:
       run:
@@ -26,5 +26,5 @@ jobs:
           ts=$(date +%F_%H.%M.%S)
           echo "BUILD_ID=${branch}-${sha}-${ts}" >> $GITHUB_OUTPUT
       - run: echo ${{ secrets.REGISTRY_PASSWORD }} | docker login -u admin --password-stdin registry.jimmyding.com
-      - run: docker build -t registry.jimmyding.com/web-staging:${{ steps.prep.outputs.BUILD_ID }} .
-      - run: docker push registry.jimmyding.com/web-staging:${{ steps.prep.outputs.BUILD_ID }}
+      - run: docker build -t registry.jimmyding.com/app-staging:${{ steps.prep.outputs.BUILD_ID }} .
+      - run: docker push registry.jimmyding.com/app-staging:${{ steps.prep.outputs.BUILD_ID }}

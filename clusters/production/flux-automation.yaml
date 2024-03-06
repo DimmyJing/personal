@@ -65,6 +65,6 @@ spec:
     name: webhook-token
   resources:
     - kind: ImageRepository
-      name: web
+      name: app
     - kind: ImageRepository
-      name: web-staging
+      name: app-staging
