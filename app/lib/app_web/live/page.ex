@@ -94,8 +94,6 @@ defmodule AppWeb.PageLive do
   end
 
   def handle_event("main-page-mousemove", %{"x" => x, "y" => y}, socket) do
-    IO.inspect({x, y, socket.id})
-
     metas =
       Presence.get_by_key(@channel_topic, socket.id)[:metas]
       |> List.first()
@@ -109,8 +107,6 @@ defmodule AppWeb.PageLive do
   def handle_info(%{event: "presence_diff", payload: _payload}, socket) do
     users =
       Presence.list(@channel_topic) |> Enum.map(fn {_, data} -> data[:metas] |> List.last() end)
-
-    IO.inspect(Presence.list(@channel_topic))
 
     {:noreply, socket |> push_event("main-page-set-users", %{users: users, socket_id: socket.id})}
   end

@@ -16,5 +16,19 @@ config :swoosh, local: false
 # Do not print debug messages in production
 config :logger, level: :info
 
+config :libcluster,
+  topologies: [
+    kubernetes: [
+      # The selected clustering strategy. Required.
+      strategy: Cluster.Strategy.Kubernetes,
+      config: [
+        kubernetes_node_basename: "app",
+        kubernetes_selector: "app=app",
+        kubernetes_ip_lookup_mode: :pods,
+        mode: :dns
+      ]
+    ]
+  ]
+
 # Runtime production configuration, including reading
 # of environment variables, is done on config/runtime.exs.
