@@ -4,19 +4,19 @@ on:
     branches:
       - main
     paths:
-      - web/**
+      - app/**
   pull_request:
     branches:
       - main
     paths:
-      - web/**
+      - app/**
   workflow_dispatch:
 jobs:
   build-web-staging:
     runs-on: arc-runner-release
     defaults:
       run:
-        working-directory: ./web
+        working-directory: ./app
     steps:
       - uses: actions/checkout@v4
       - run: |
@@ -28,13 +28,12 @@ jobs:
           sha=${GITHUB_SHA::8}
           ts=$(date +%F_%H.%M.%S)
           echo "BUILD_ID=${branch}-${sha}-${ts}" >> $GITHUB_OUTPUT
-      - uses: oven-sh/setup-bun@v1
-        with:
-          bun-version: latest
-      - run: bun install --frozen-lockfile
-      - run: bun run build
-      - run: rm -rf ./node_modules
-      - run: bun install --production --frozen-lockfile
+      - uses: erlef/setup-beam@v1
+      - run: mix deps.get --only prod
+      - run: MIX_ENV=prod mix compile
+      - run: MIX_ENV=prod mix assets.deploy
+      - run: mix phx.gen.release
+      - run: MIX_ENV=prod mix release
       - run: echo ${{ secrets.REGISTRY_PASSWORD }} | docker login -u admin --password-stdin registry.jimmyding.com
       - run: docker build -t registry.jimmyding.com/web-staging:${{ steps.prep.outputs.BUILD_ID }} . -f ../build/web.dockerfile
       - run: docker push registry.jimmyding.com/web-staging:${{ steps.prep.outputs.BUILD_ID }}
