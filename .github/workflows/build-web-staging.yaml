@@ -28,27 +28,6 @@ jobs:
           sha=${GITHUB_SHA::8}
           ts=$(date +%F_%H.%M.%S)
           echo "BUILD_ID=${branch}-${sha}-${ts}" >> $GITHUB_OUTPUT
-      - uses: erlef/setup-beam@v1
-        with:
-          otp-version: "25.3.2.9"
-          elixir-version: "1.15.7"
-          install-hex: true
-          install-rebar: false
-      - run: mix deps.get --only prod
-        env:
-          ELIXIR_ERL_OPTIONS: +fnu
-      - run: mix compile
-        env:
-          ELIXIR_ERL_OPTIONS: +fnu
-          MIX_ENV: prod
-      - run: mix assets.deploy
-        env:
-          ELIXIR_ERL_OPTIONS: +fnu
-          MIX_ENV: prod
-      - run: mix release
-        env:
-          ELIXIR_ERL_OPTIONS: +fnu
-          MIX_ENV: prod
       - run: echo ${{ secrets.REGISTRY_PASSWORD }} | docker login -u admin --password-stdin registry.jimmyding.com
-      - run: docker build -t registry.jimmyding.com/web-staging:${{ steps.prep.outputs.BUILD_ID }} . -f ../build/web.dockerfile
+      - run: docker build -t registry.jimmyding.com/web-staging:${{ steps.prep.outputs.BUILD_ID }} .
       - run: docker push registry.jimmyding.com/web-staging:${{ steps.prep.outputs.BUILD_ID }}
