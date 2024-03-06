@@ -61,8 +61,7 @@ metadata:
   name: app-deployment
   namespace: default
 spec:
-  # TODO: increase this when i figure out how to make elixir pods communicate with each other
-  replicas: 1
+  replicas: 3
   selector:
     matchLabels:
       app: app
