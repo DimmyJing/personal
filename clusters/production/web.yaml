@@ -32,7 +32,8 @@ metadata:
   name: web-deployment
   namespace: default
 spec:
-  replicas: 3
+  # TODO: increase this when i figure out how to make elixir pods communicate with each other
+  replicas: 1
   selector:
     matchLabels:
       app: web
@@ -103,7 +104,7 @@ metadata:
   name: web-deployment-staging
   namespace: staging
 spec:
-  replicas: 3
+  replicas: 1
   selector:
     matchLabels:
       app: web
