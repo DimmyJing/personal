@@ -86,6 +86,19 @@ spec:
                   key: SECRET_KEY_BASE
             - name: PHX_HOST
               value: jimmyding.com
+            - name: RELEASE_COOKIE
+              valueFrom:
+                secretKeyRef:
+                  name: libcluster-cookie
+                  key: RELEASE_COOKIE
+            - name: NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
       imagePullSecrets:
         - name: registry-credential
 ---
@@ -187,6 +200,11 @@ spec:
                   key: SECRET_KEY_BASE
             - name: PHX_HOST
               value: staging.jimmyding.com
+            - name: RELEASE_COOKIE
+              valueFrom:
+                secretKeyRef:
+                  name: libcluster-cookie
+                  key: RELEASE_COOKIE
             - name: NAMESPACE
               valueFrom:
                 fieldRef:
