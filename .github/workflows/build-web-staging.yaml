@@ -29,6 +29,11 @@ jobs:
           ts=$(date +%F_%H.%M.%S)
           echo "BUILD_ID=${branch}-${sha}-${ts}" >> $GITHUB_OUTPUT
       - uses: erlef/setup-beam@v1
+        with:
+          otp-version: "26.2.2"
+          elixir-version: "1.16.1"
+          install-hex: true
+          install-rebar: false
       - run: mix deps.get --only prod
       - run: MIX_ENV=prod mix compile
       - run: MIX_ENV=prod mix assets.deploy
