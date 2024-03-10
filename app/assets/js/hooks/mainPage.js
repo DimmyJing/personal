@@ -1,3 +1,21 @@
+/**
+ * @param {Set<string>} setA
+ * @param {Set<string>} setB
+ * @returns {Set<string>}
+ */
+function setDifference(setA, setB) {
+  return new Set([...setA].filter((x) => !setB.has(x)));
+}
+
+/**
+ * @param {Set<string>} setA
+ * @param {Set<string>} setB
+ * @returns {Set<string>}
+ */
+function setIntersection(setA, setB) {
+  return new Set([...setA].filter((x) => setB.has(x)));
+}
+
 /** @type {import("live_view_hook").Hook} */
 export const MainPageContainerHook = {
   mounted() {
@@ -22,9 +40,9 @@ export const MainPageContainerHook = {
         "hover:bg-blue-300": "bg-blue-300",
         "hover:bg-indigo-300": "bg-indigo-300",
         "hover:bg-violet-300": "bg-violet-300",
-      }
+      };
       let result = "";
-      tile.classList.forEach(cn => {
+      tile.classList.forEach((cn) => {
         if (tileColorMap[cn]) {
           result = tileColorMap[cn];
         }
@@ -69,7 +87,7 @@ export const MainPageContainerHook = {
           tilesHoveredCache.set(tileEl.id, tileEl);
         }
       }
-      const tilesToRemove = tilesHovered.difference(newTilesHovered);
+      const tilesToRemove = setDifference(tilesHovered, newTilesHovered);
       for (const tile of tilesToRemove) {
         tilesHovered.delete(tile);
         const tileEl = document.getElementById(tile);
@@ -80,7 +98,7 @@ export const MainPageContainerHook = {
           tileEl.classList.add("duration-300");
         }
       }
-      const tilesToAdd = newTilesHovered.difference(tilesHovered);
+      const tilesToAdd = setDifference(newTilesHovered, tilesHovered);
       for (const tile of tilesToAdd) {
         tilesHovered.add(tile);
         const tileEl = tilesHoveredCache.get(tile);
@@ -93,7 +111,7 @@ export const MainPageContainerHook = {
       }
     }
 
-    this.el.addEventListener("mousemove", e => {
+    this.el.addEventListener("mousemove", (e) => {
       const mousex = (e.pageX / window.innerWidth) * 100;
       const mousey = (e.pageY / window.innerHeight) * 100;
       this.pushEvent("main-page-mousemove", { x: mousex, y: mousey });
@@ -106,7 +124,7 @@ export const MainPageContainerHook = {
       const socketID = payload.socket_id;
       const newCursors = new Set(users.map(({ socket_id }) => socket_id));
       /** @type {Set<string>} */
-      const cursorsToRemove = cursors.difference(newCursors);
+      const cursorsToRemove = setDifference(cursors, newCursors);
       for (const cursor of cursorsToRemove) {
         /** @type {HTMLDivElement} */
         const cursorEl = document.getElementById("main-page-cursor-" + cursor);
@@ -118,7 +136,7 @@ export const MainPageContainerHook = {
       /** @type {{x: number, y: number}[]} */
       const tilePositions = [];
       /** @type {Set<string>} */
-      const cursorsToAdd = newCursors.difference(cursors);
+      const cursorsToAdd = setDifference(newCursors, cursors);
       for (const cursor of cursorsToAdd) {
         if (cursor === socketID) continue;
         /** @type {HTMLDivElement} */
@@ -130,7 +148,7 @@ export const MainPageContainerHook = {
         cursorEl.classList.add("flex");
         cursorEl.style.left = `${user.x}%`;
         cursorEl.style.top = `${user.y}%`;
-        const stopEls = cursorEl.getElementsByTagName("stop")
+        const stopEls = cursorEl.getElementsByTagName("stop");
         const colors = randomTwoColors();
         stopEls[0].setAttribute("stop-color", colors[0]);
         stopEls[1].setAttribute("stop-color", colors[1]);
@@ -143,7 +161,7 @@ export const MainPageContainerHook = {
         tilePositions.push({ x: user.x, y: user.y });
       }
       /** @type {Set<string>} */
-      const cursorsToModify = cursors.intersection(newCursors);
+      const cursorsToModify = setIntersection(cursors, newCursors);
       for (const cursor of cursorsToModify) {
         if (cursor === socketID) continue;
         /** @type {HTMLDivElement} */
